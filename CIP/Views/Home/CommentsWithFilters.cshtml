@@ -1,0 +1,71 @@
+﻿@model IEnumerable<CIP.Models.Comment>
+
+@{
+    ViewBag.Title = "Comments";
+}
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link href="~/Content/Site.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/xrange.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+</head>
+<body>
+    <div id="modDialog" class="modal fade">
+        <div id="dialogContent" class="modal-dialog"></div>
+    </div>
+
+    <div>
+        <table class="table">
+            <tr>
+                <th>
+                    Номер объекта
+                </th>
+                <th>
+                    Важность
+                </th>
+                <th>
+                    Комментарий
+                </th>
+                <th>
+                    Дата
+                </th>
+            </tr>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Object)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Priority)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Commentary)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Date).ToString().AsDateTime().ToShortDateString()
+                    </td>
+                    <td>
+                        @Html.ActionLink("Редактировать", "EditComment", new { id = item.Id }) |
+                        @Html.ActionLink("Детали", "Details", new { id = item.Id }) |
+                    </td>
+                </tr>
+            }
+
+        </table>
+    </div>
+  
+    </body>
+</html>

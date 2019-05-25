@@ -1,0 +1,37 @@
+﻿@{
+    ViewBag.Title = "Редактировать комментарий";
+}
+@model CIP.Models.Comment
+    <html>
+<head>
+<link href="~/Content/Site.css" rel="stylesheet" />
+    </head>
+    <body>
+@using (Html.BeginForm("EditComment", "Home", FormMethod.Post))
+{
+    <div class="modal-content">
+        <div class="modal-header">
+            <button class="close" data-dismiss="modal" area-hidden="true">X</button>
+            <h4>Комментарий</h4>
+        </div>
+        <div class="modal-body">
+            <dl class="dl-horizontal">
+                @Html.HiddenFor(m => m.Id)
+                <dt>Дата</dt>
+                <dd> @Html.EditorFor(m => m.Date)</dd>
+                <dt>Объект</dt>
+                <dd> @Html.EditorFor(m => m.Object)</dd>
+                <dt>Важность</dt>
+                <dd> @Html.EditorFor(m => m.Priority)</dd>
+                <dt>Комментарий</dt>
+                <dd cols="40" rows="5"> @Html.EditorFor(m => m.Commentary)</dd>
+                <dd><input style ="text-align: left" type="submit" value="Изменить" /></dd>
+            </dl>
+
+        </div>
+
+    </div>
+}
+        
+    </body>
+</html>

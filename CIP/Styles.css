@@ -1,0 +1,12 @@
+﻿body {
+}
+.block1 {
+    width: 400px;
+    height: 400px; /* если высота не будет задана явна, она будет равна 100% */
+    position: absolute;
+    top: -400px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+}

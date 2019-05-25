@@ -1,0 +1,58 @@
+﻿@model DateTime
+@{
+
+    ViewBag.Title = "Home Page";
+}
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link href="~/Content/Site.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/xrange.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script>
+        jQuery(function ($) {
+
+            $("#datepicker").datepicker({
+                dateFormat: "yy-mm-dd"
+            });
+
+        });
+    </script>
+
+</head>
+
+
+
+
+<body>
+    <h1>Эффективность работы CIP </h1>
+    <h2>Контур 1</h2>
+
+
+    @using (Ajax.BeginForm("Circle", new AjaxOptions { UpdateTargetId = "Main" }))
+    {
+        <div>
+            <p class="floated">Выбрать дату: <input type="text" value="@Model.ToString("yyyy-MM-dd")" class="" id="datepicker" name="time" autocomplete="off"></p>
+            <input class="floated" type="submit" name="CallCircle" id="CallCircle" value="Показать Эффективность" />
+        </div>
+    }
+    <script>
+        $("#CallCircle").click();
+    </script>
+    <br />
+    <div id="Main">
+
+    </div>
+</body>
+</html>
+

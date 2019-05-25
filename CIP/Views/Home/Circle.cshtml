@@ -1,0 +1,544 @@
+﻿@model List<CIP.Models.Cip1_Line>
+@using System.Runtime.Serialization.Json
+@using Newtonsoft.Json
+@{
+    ViewData["Title"] = "Bar Chart";
+}
+<head>
+    <link href="~/Content/Site.css" rel="stylesheet" />
+</head>
+
+@{
+    // Для построения 1ого графика
+    List<CIP.Models.Cip1_Line> m = Model.Where(x => x.Name.Contains("Topics.CIP130.Run_Line1")).OrderBy(x => x.Date).ToList();
+    double TimeRun = 0;
+    double TimeHold = 0;
+    int ReadyTimeRun = 0;
+    int ReadyTimeHold = 0;
+    TimeSpan diff;
+
+
+    // Для построения 2ого графика
+    List<CIP.Models.Cip1_Line> bar = Model.Where(x => x.Name.Contains("Topics.CIP130.Object_Line1")).OrderBy(x => x.Date).ToList();
+
+    int Obj_81 = bar.Count(x => Equals(x.Value, "81"));
+    int Obj_1 = bar.Count(x => Equals(x.Value, "1"));
+    int Obj_2 = bar.Count(x => Equals(x.Value, "2"));
+    int Obj_21 = bar.Count(x => Equals(x.Value, "21"));
+    int Obj_22 = bar.Count(x => Equals(x.Value, "22"));
+    int Obj_18 = bar.Count(x => Equals(x.Value, "18"));
+    int Obj_4 = bar.Count(x => Equals(x.Value, "4"));
+    int Obj_3 = bar.Count(x => Equals(x.Value, "3"));
+
+    // Для построения 3его графика
+    List<CIP.Models.GantDiagram> Objects = new List<CIP.Models.GantDiagram>();
+    List<CIP.Models.Cip1_Line> Gant_obj_81 = Model.Where(x => x.Name.Contains("Topics.CIP130.Object_Line1") && (Equals(x.Value, "81") || Equals(x.Value, "0"))).OrderBy(x => x.Date).ToList();
+    List<CIP.Models.TimeHelp> Times_obj_81 = new List<CIP.Models.TimeHelp>();
+
+    List<CIP.Models.Cip1_Line> Gant_obj_22 = Model.Where(x => x.Name.Contains("Topics.CIP130.Object_Line1") && (Equals(x.Value, "22") || Equals(x.Value, "0"))).OrderBy(x => x.Date).ToList();
+    List<CIP.Models.TimeHelp> Times_obj_22 = new List<CIP.Models.TimeHelp>();
+    List<CIP.Models.GantDiagram> Object_22 = new List<CIP.Models.GantDiagram>();
+
+    List<CIP.Models.Cip1_Line> Gant_obj_21 = Model.Where(x => x.Name.Contains("Topics.CIP130.Object_Line1") && (Equals(x.Value, "21") || Equals(x.Value, "0"))).OrderBy(x => x.Date).ToList();
+    List<CIP.Models.TimeHelp> Times_obj_21 = new List<CIP.Models.TimeHelp>();
+    List<CIP.Models.GantDiagram> Object_21 = new List<CIP.Models.GantDiagram>();
+
+    List<CIP.Models.Cip1_Line> Gant_obj_18 = Model.Where(x => x.Name.Contains("Topics.CIP130.Object_Line1") && (Equals(x.Value, "18") || Equals(x.Value, "0"))).OrderBy(x => x.Date).ToList();
+    List<CIP.Models.TimeHelp> Times_obj_18 = new List<CIP.Models.TimeHelp>();
+    List<CIP.Models.GantDiagram> Object_18 = new List<CIP.Models.GantDiagram>();
+    //
+
+    //Для построения 4ого графика
+    List<List<CIP.Models.Cip1_Line>> Steps_obj_81 = new List<List<CIP.Models.Cip1_Line>>();
+
+    List<CIP.Models.StepDiagram> Steps_object_81 = new List<CIP.Models.StepDiagram>();
+}
+
+
+@for (int i = 0; i < m.Count;)
+{
+
+    if (m.First().Value == "False")
+    {
+        if ((i + 1) < m.Count)
+        {
+            if (m[i + 1].Value != m[i].Value)
+            {
+
+                diff = m[i + 1].Date - m[i].Date;
+                TimeHold = TimeHold + diff.TotalMinutes;
+                if (i == 0)
+                {
+
+                }
+            }
+        }
+        if ((i + 1) > m.Count && (m.Count % 2 != 0))
+        {
+
+            TimeHold = TimeHold + 1440 - m[i].Date.Minute;
+        }
+        TimeRun = 1440 - TimeHold;
+    }
+
+
+
+    if (m.First().Value == "True")
+    {
+        if ((i + 1) < m.Count)
+        {
+            if (m[i + 1].Value != m[i].Value)
+            {
+                diff = m[i + 1].Date - m[i].Date;
+                TimeRun = TimeRun + diff.TotalMinutes;
+
+            }
+        }
+
+        if ((i + 1) > m.Count && (m.Count % 2 != 0))
+        {
+
+            TimeRun = TimeRun + 1440 - m[i].Date.Minute;
+        }
+
+        TimeHold = 1440 - TimeRun;
+    }
+
+    ReadyTimeHold = (int)TimeHold;
+    ReadyTimeRun = (int)TimeRun;
+    i = i + 2;
+}
+
+@for (int i = 0; i < Gant_obj_81.Count(); i++) // Нужно добавить исключения за переходы индекса
+{
+    if (Gant_obj_81[i].Value == "81" && (i + 1) < Gant_obj_81.Count)
+    {
+        Times_obj_81.Add(new CIP.Models.TimeHelp(Gant_obj_81[i].Date, Gant_obj_81[i + 1].Date));
+
+    }
+    if (Gant_obj_81[i].Value == "81" && (i + 1) >= Gant_obj_81.Count)
+    {
+        Times_obj_81.Add(new CIP.Models.TimeHelp(Gant_obj_81[i].Date, new DateTime(Gant_obj_81[i].Date.Year, Gant_obj_81[i].Date.Month, Gant_obj_81[i].Date.Day, 23, 59, 59)));
+    }
+}
+@for (int i = 0; i < Times_obj_81.Count(); i++)
+{
+    Steps_obj_81.Add(Model.Where(x => x.Name.Contains("Topics.CIP130.Step_Line1") && (x.Date >= Times_obj_81[i].TimeStart && x.Date <= Times_obj_81[i].TimeEnd)).OrderBy(x => x.Date).ToList());
+}
+@for (int i = 0; i < Gant_obj_22.Count(); i++) // Нужно добавить исключения за переходы индекса
+{
+    if (Gant_obj_22[i].Value == "22" && (i + 1) < Gant_obj_22.Count)
+    {
+        Times_obj_22.Add(new CIP.Models.TimeHelp(Gant_obj_22[i].Date, Gant_obj_22[i + 1].Date));
+
+    }
+    if (Gant_obj_22[i].Value == "22" && (i + 1) >= Gant_obj_22.Count)
+    {
+        Times_obj_22.Add(new CIP.Models.TimeHelp(Gant_obj_22[i].Date, new DateTime(Gant_obj_22[i].Date.Year, Gant_obj_22[i].Date.Month, Gant_obj_22[i].Date.Day, 23, 59, 59)));
+    }
+}
+@for (int i = 0; i < Gant_obj_21.Count(); i++) // Нужно добавить исключения за переходы индекса
+{
+    if (Gant_obj_21[i].Value == "21" && (i + 1) < Gant_obj_21.Count)
+    {
+        Times_obj_21.Add(new CIP.Models.TimeHelp(Gant_obj_21[i].Date, Gant_obj_21[i + 1].Date));
+
+    }
+    if (Gant_obj_21[i].Value == "21" && (i + 1) >= Gant_obj_21.Count)
+    {
+        Times_obj_21.Add(new CIP.Models.TimeHelp(Gant_obj_21[i].Date, new DateTime(Gant_obj_21[i].Date.Year, Gant_obj_21[i].Date.Month, Gant_obj_21[i].Date.Day, 23, 59, 59)));
+    }
+}
+@for (int i = 0; i < Gant_obj_18.Count(); i++) // Нужно добавить исключения за переходы индекса
+{
+    if (Gant_obj_18[i].Value == "18" && (i + 1) < Gant_obj_18.Count)
+    {
+        Times_obj_18.Add(new CIP.Models.TimeHelp(Gant_obj_18[i].Date, Gant_obj_18[i + 1].Date));
+
+    }
+    if (Gant_obj_18[i].Value == "18" && (i + 1) >= Gant_obj_18.Count)
+    {
+        Times_obj_18.Add(new CIP.Models.TimeHelp(Gant_obj_18[i].Date, new DateTime(Gant_obj_18[i].Date.Year, Gant_obj_18[i].Date.Month, Gant_obj_18[i].Date.Day, 23, 59, 59)));
+    }
+}
+
+
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/data.js"></script>
+<script src="https://code.highcharts.com/modules/drilldown.js"></script>
+<script src="https://code.highcharts.com/modules/xrange.js"></script>
+
+<br />
+<br />
+<br />
+
+<div>
+    <div id="cont"></div>
+    <br />
+    <br />
+    <div id="cont2"></div>
+</div>
+<br />
+<br />
+<div id="containers" width: 800px; height: 600px></div>
+<br />
+<br />
+<div id="containers2" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+<script type="text/javascript">
+
+    Highcharts.chart('cont', {
+        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false,
+            type: 'pie'
+        },
+        title: {
+            text: 'Работа контура за 24 часа'
+        },
+        tooltip: {
+            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                    style: {
+                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'Статусы',
+            colorByPoint: true,
+            data: [{
+                name: 'Мойка ',
+                y: @ReadyTimeRun,
+                sliced: true,
+                selected: true
+
+            },  {
+                name: 'Нет мойки',
+                y: @ReadyTimeHold
+            }]
+        }],
+        navigation: {
+            buttonOptions: {
+                enabled: false
+            }
+        }
+    });
+
+</script>
+
+
+<script>
+// Create the chart
+Highcharts.chart('cont2', {
+  chart: {
+    type: 'column'
+  },
+  title: {
+    text: 'Кол-во моек на объектах за @m[0].Date.ToShortDateString()'
+  },
+  subtitle: {
+    text: ''
+  },
+  xAxis: {
+      type: 'category',
+      title: {
+          text: 'Объекты'
+      }
+  },
+  yAxis: {
+    title: {
+      text: 'Кол-во моек'
+    }
+
+  },
+  legend: {
+    enabled: false
+  },
+  plotOptions: {
+    series: {
+      borderWidth: 0,
+      dataLabels: {
+        enabled: true,
+        format: '{point.y:.1f}'
+      }
+    }
+  },
+
+  tooltip: {
+    headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+    pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}</b> of total<br />'
+  },
+
+  "series": [
+    {
+      "name": "Objects",
+      "colorByPoint": true,
+      "data": [
+        {
+          "name": "Объект 81",
+          "y": @Obj_81
+        },
+        {
+          "name": "Объект 22",
+          "y": @Obj_22
+        },
+        {
+          "name": "Объект 21",
+          "y": @Obj_21
+        },
+        {
+          "name": "Объект 18",
+          "y": @Obj_18
+        },
+        {
+          "name": "Объект 4",
+          "y": @Obj_4
+
+        },
+        {
+          "name": "Объект 3",
+          "y": @Obj_3,
+        },
+        {
+          "name": "Объект 2",
+          "y": @Obj_2
+        },
+         {
+          "name": "Объект 1",
+          "y": @Obj_1
+        }
+      ]
+    }
+    ],
+    navigation: {
+        buttonOptions: {
+            enabled: false
+        }
+    }
+});
+</script>
+@{
+    DateTime JsTimeFormat;
+    DateTime StartCip;
+    DateTime EndCip;
+    for (int i = 0; i < Times_obj_81.Count; i++)
+    {
+        // Для Диаграммы Ганта
+        JsTimeFormat = new DateTime(1970, 1, 1).ToUniversalTime();
+        StartCip = Times_obj_81[i].TimeStart.ToUniversalTime();
+        EndCip = Times_obj_81[i].TimeEnd.ToUniversalTime();
+        TimeSpan start = new TimeSpan(StartCip.Ticks - JsTimeFormat.Ticks);
+        TimeSpan end = new TimeSpan(EndCip.Ticks - JsTimeFormat.Ticks);
+        Objects.Add(new CIP.Models.GantDiagram(start.TotalMilliseconds, end.TotalMilliseconds, 0));
+
+        // Для Диаграммы шагов
+
+    }
+    for (int i = 0; i < Times_obj_22.Count; i++)
+    {
+        JsTimeFormat = new DateTime(1970, 1, 1).ToUniversalTime();
+        StartCip = Times_obj_22[i].TimeStart.ToUniversalTime();
+        EndCip = Times_obj_22[i].TimeEnd.ToUniversalTime();
+        TimeSpan start = new TimeSpan(StartCip.Ticks - JsTimeFormat.Ticks);
+        TimeSpan end = new TimeSpan(EndCip.Ticks - JsTimeFormat.Ticks);
+        Objects.Add(new CIP.Models.GantDiagram(start.TotalMilliseconds, end.TotalMilliseconds, 1));
+    }
+    for (int i = 0; i < Times_obj_21.Count; i++)
+    {
+        JsTimeFormat = new DateTime(1970, 1, 1).ToUniversalTime();
+        StartCip = Times_obj_21[i].TimeStart.ToUniversalTime();
+        EndCip = Times_obj_21[i].TimeEnd.ToUniversalTime();
+        TimeSpan start = new TimeSpan(StartCip.Ticks - JsTimeFormat.Ticks);
+        TimeSpan end = new TimeSpan(EndCip.Ticks - JsTimeFormat.Ticks);
+        Objects.Add(new CIP.Models.GantDiagram(start.TotalMilliseconds, end.TotalMilliseconds, 2));
+    }
+    for (int i = 0; i < Times_obj_18.Count; i++)
+    {
+        JsTimeFormat = new DateTime(1970, 1, 1).ToUniversalTime();
+        StartCip = Times_obj_18[i].TimeStart.ToUniversalTime();
+        EndCip = Times_obj_18[i].TimeEnd.ToUniversalTime();
+        TimeSpan start = new TimeSpan(StartCip.Ticks - JsTimeFormat.Ticks);
+        TimeSpan end = new TimeSpan(EndCip.Ticks - JsTimeFormat.Ticks);
+        Objects.Add(new CIP.Models.GantDiagram(start.TotalMilliseconds, end.TotalMilliseconds, 3));
+    }
+
+    for (int i = 0; i < Steps_obj_81.Count(); i++)
+    {
+        for (int j = 0; j < Steps_obj_81[i].Count(); j++)
+        {
+
+            JsTimeFormat = new DateTime(1970, 1, 1).ToUniversalTime();
+            StartCip = Steps_obj_81[i][j].Date.ToUniversalTime();
+            TimeSpan start = new TimeSpan(StartCip.Ticks - JsTimeFormat.Ticks);
+            if (j == 0)
+            {
+                Steps_object_81.Add(new CIP.Models.StepDiagram(start.TotalMilliseconds, 0));
+            }
+            Steps_object_81.Add(new CIP.Models.StepDiagram(start.TotalMilliseconds, Convert.ToInt32(Steps_obj_81[i][j].Value)));
+            if ((j + 1) < Steps_obj_81[i].Count())
+            {
+                StartCip = Steps_obj_81[i][j + 1].Date.ToUniversalTime();
+                start = new TimeSpan(StartCip.Ticks - JsTimeFormat.Ticks);
+                Steps_object_81.Add(new CIP.Models.StepDiagram(start.TotalMilliseconds, Convert.ToInt32(Steps_obj_81[i][j].Value)));
+            }
+        }
+
+    }
+}
+
+
+@{
+    var Objects_for_gant = JsonConvert.SerializeObject(Objects);
+    var Object_81_steps = JsonConvert.SerializeObject(Steps_object_81);
+}
+<br />
+<br />
+<hr />
+<h1>Комментарий к контуру за  @m[0].Date.ToShortDateString() </h1>
+@using (Ajax.BeginForm("Create", new AjaxOptions { }))
+{
+    <div>
+        <span><b>Дата</b></span><br>
+        <input type="text" style="text-align: left; width: 280px" id="dateTime" name="dateTime" value="@m[0].Date.ToShortDateString()" /> <br />
+        <span><b>Выберете Важность</b></span><br>
+        <select class="form-control" id="Priority" name="priority">
+            <option value="1">Критично</option>
+            <option value="2">Важно</option>
+            <option value="3">В норме</option>
+        </select>
+        <span><b>Выберете Объект</b></span><br>
+        <select class="form-control" id="Object" name="obj">
+            <option>81</option>
+            <option>22</option>
+            <option>21</option>
+            <option>18</option>
+            <option>4</option>
+            <option>3</option>
+            <option>2</option>
+            <option>1</option>
+        </select>
+
+        <label>
+            <span>Опишите проблему:</span><br>
+            <textarea cols="40" rows="5" name="commentary"></textarea>
+        </label>
+        <br />
+        <input class="floated" style="width: 280px " type="submit" value="Добавить комментарий" />
+    </div>
+}
+<script>
+
+    Highcharts.chart('containers', {
+        chart: {
+            type: 'xrange'
+        },
+        title: {
+            text: 'Мойка объектов'
+        },
+        xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: {
+                hour: '%H:%M'
+            }
+        },
+        yAxis: {
+            title: {
+                text: ''
+            },
+            categories: ['Объект 81', 'Объект 22', 'Объект 21', 'Объект 18', 'Объект 4', 'Объект 3', 'Объект 2', 'Объект 1'],
+            reversed: true
+        },
+        series: [{
+            name: 'Объекты',
+            // pointPadding: 0,
+            // groupPadding: 0,
+            borderColor: 'gray',
+            pointWidth: 20,
+            data: @Html.Raw(Objects_for_gant)
+        }],
+        navigation: {
+            buttonOptions: {
+                enabled: false
+            }
+        }
+    });
+
+
+</script>
+
+
+<script>
+
+
+            Highcharts.chart('containers2', {
+                chart: {
+                    zoomType: 'x'
+                },
+                title: {
+                    text: 'Шаги мойки объекта 81'
+                },
+                subtitle: {
+
+                },
+                xAxis: {
+                    type: 'datetime'
+                },
+                yAxis: {
+                    title: {
+                        text: 'Шаги'
+                    }
+                },
+                legend: {
+                    enabled: false
+                },
+                plotOptions: {
+                    area: {
+                        fillColor: {
+                            linearGradient: {
+                                x1: 0,
+                                y1: 0,
+                                x2: 0,
+                                y2: 1
+                            },
+                            stops: [
+                                [0, Highcharts.getOptions().colors[0]],
+                                [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+                            ]
+                        },
+                        marker: {
+                            radius: 2
+                        },
+                        lineWidth: 1,
+                        states: {
+                            hover: {
+                                lineWidth: 1
+                            }
+                        },
+                        threshold: null
+                    }
+                },
+
+                series: [{
+                    type: 'area',
+                    name: 'Шаги',
+                    data:@Html.Raw(Object_81_steps)
+                }],
+                 navigation: {
+                    buttonOptions: {
+                        enabled: false
+                    }
+                }
+            });
+
+</script>
