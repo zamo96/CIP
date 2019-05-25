@@ -12,6 +12,7 @@ namespace CIP.Controllers
     public class HomeController : Controller
     {
         // Just check github
+        // Yes it works
         PhaseContext db = new PhaseContext();
         TestContext td = new TestContext();
         Cip1_LineContext cip = new Cip1_LineContext();
